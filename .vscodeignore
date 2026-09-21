@@ -6,3 +6,4 @@ tsconfig.json
 pnpm-lock.yaml
 vscode-laravel-routes-prompt.md
 **/.DS_Store
+.gitignore
