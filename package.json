@@ -61,20 +61,48 @@
       {
         "command": "laravelRoutes.open",
         "title": "Laravel Routes: Open Route Source"
+      },
+      {
+        "command": "laravelRoutes.filter",
+        "title": "Laravel Routes: Filter by Middleware",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "laravelRoutes.clearFilter",
+        "title": "Laravel Routes: Clear Filter",
+        "icon": "$(clear-all)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "laravelRoutes.clearFilter",
+          "when": "view == laravelRoutes.routes && laravelRoutes.filterActive",
+          "group": "navigation@1"
+        },
+        {
+          "command": "laravelRoutes.filter",
+          "when": "view == laravelRoutes.routes",
+          "group": "navigation@2"
+        },
+        {
           "command": "laravelRoutes.refresh",
           "when": "view == laravelRoutes.routes",
-          "group": "navigation"
+          "group": "navigation@3"
         }
       ],
       "commandPalette": [
         {
           "command": "laravelRoutes.open",
           "when": "false"
+        },
+        {
+          "command": "laravelRoutes.filter",
+          "when": "laravelRoutes.hasProject"
+        },
+        {
+          "command": "laravelRoutes.clearFilter",
+          "when": "laravelRoutes.filterActive"
         }
       ]
     },

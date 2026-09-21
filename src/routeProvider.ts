@@ -31,12 +31,41 @@ export class RouteItem extends vscode.TreeItem {
 
 export class RouteTreeProvider implements vscode.TreeDataProvider<RouteItem> {
   private routes: LaravelRoute[] = [];
+  /** 絞り込み条件。ミドルウェアの完全な文字列（クラス名:引数）の AND 条件 */
+  private filter: string[] = [];
   private readonly changeEmitter = new vscode.EventEmitter<RouteItem | undefined>();
   readonly onDidChangeTreeData = this.changeEmitter.event;
 
   setRoutes(routes: LaravelRoute[]): void {
     this.routes = routes;
     this.changeEmitter.fire(undefined);
+  }
+
+  setFilter(middleware: string[]): void {
+    this.filter = [...middleware];
+    this.changeEmitter.fire(undefined);
+  }
+
+  getFilter(): string[] {
+    return [...this.filter];
+  }
+
+  /** 取得済みルートに登場するミドルウェアを重複なく返す（短縮名順） */
+  getAllMiddleware(): string[] {
+    const set = new Set<string>();
+    for (const route of this.routes) {
+      for (const m of route.middleware) {
+        set.add(m);
+      }
+    }
+    return [...set].sort((a, b) => shortMiddleware(a).localeCompare(shortMiddleware(b)));
+  }
+
+  getVisibleRoutes(): LaravelRoute[] {
+    if (this.filter.length === 0) {
+      return this.routes;
+    }
+    return this.routes.filter((r) => this.filter.every((m) => r.middleware.includes(m)));
   }
 
   getTreeItem(element: RouteItem): vscode.TreeItem {
@@ -47,8 +76,13 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<RouteItem> {
     if (element) {
       return [];
     }
-    return this.routes.map((r) => new RouteItem(r));
+    return this.getVisibleRoutes().map((r) => new RouteItem(r));
   }
+}
+
+/** "Illuminate\Auth\Middleware\Authenticate:sanctum" → "Authenticate:sanctum" */
+export function shortMiddleware(middleware: string): string {
+  return middleware.split('\\').pop() ?? middleware;
 }
 
 /** "App\Http\Controllers\UserController@index" → "UserController@index" */
