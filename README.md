@@ -81,8 +81,17 @@ pnpm install
 pnpm run compile   # または pnpm run watch
 ```
 
-VSCode でこのフォルダを開き `F5` を押すと、拡張開発ホスト（Extension Development Host）が起動します。
-そちらで Laravel プロジェクトのフォルダを開くと、開発中の拡張が動作します。
+VSCode でこのフォルダを開き `F5` を押すと、拡張開発ホスト（Extension Development Host）が `sample-app/` を開いた状態で起動します。
+
+### 動作確認用の Laravel プロジェクト
+
+`sample-app/` は git 管理外です。次のスクリプトで作成できます（composer が必要）。
+
+```sh
+./scripts/create-sample-app.sh
+```
+
+コントローラ@メソッド、Invokable、クロージャ、`Route::view` / `Route::redirect`、リソースルート、API ルート、prefix 付きグループ、複数ミドルウェアなど、拡張が扱うパターンを一通り含んだルートが `routes/web.php` と `routes/api.php` に定義されます。
 
 - `src/extension.ts` — エントリーポイント。コマンド登録と読み込み処理
 - `src/artisan.ts` — `route:list --json` の実行
