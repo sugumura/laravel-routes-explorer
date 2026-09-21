@@ -1,0 +1,99 @@
+{
+  "name": "laravel-routes-explorer",
+  "displayName": "Laravel Routes Explorer",
+  "description": "Laravel プロジェクトのルート一覧をサイドバーに表示します",
+  "version": "0.0.1",
+  "publisher": "sugumura",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "laravel",
+    "php",
+    "routes"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "laravelRoutes",
+          "title": "Laravel Routes",
+          "icon": "resources/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "laravelRoutes": [
+        {
+          "id": "laravelRoutes.routes",
+          "name": "Routes"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "laravelRoutes.routes",
+        "contents": "Laravel プロジェクトが見つかりません。\nワークスペースフォルダ直下に artisan ファイルがあるプロジェクトを開いてください。",
+        "when": "!laravelRoutes.hasProject"
+      },
+      {
+        "view": "laravelRoutes.routes",
+        "contents": "route:list の実行に失敗しました。\n[出力パネルを開く](command:laravelRoutes.showOutput)\n[再読み込み](command:laravelRoutes.refresh)",
+        "when": "laravelRoutes.hasProject && laravelRoutes.loadError"
+      }
+    ],
+    "commands": [
+      {
+        "command": "laravelRoutes.refresh",
+        "title": "Laravel Routes: Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "laravelRoutes.showOutput",
+        "title": "Laravel Routes: Show Output"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "laravelRoutes.refresh",
+          "when": "view == laravelRoutes.routes",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Laravel Routes Explorer",
+      "properties": {
+        "laravelRoutes.phpPath": {
+          "type": "string",
+          "default": "php",
+          "description": "artisan の実行に使う PHP の実行ファイル。Docker などでホストに PHP がない場合はラッパースクリプトのパスを指定します。"
+        },
+        "laravelRoutes.exceptVendor": {
+          "type": "boolean",
+          "default": false,
+          "description": "vendor パッケージが定義したルートを除外します（route:list --except-vendor）。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.5.0"
+  }
+}

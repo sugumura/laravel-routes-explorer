@@ -1,0 +1,8 @@
+.vscode/**
+src/**
+node_modules/**
+out/**/*.map
+tsconfig.json
+pnpm-lock.yaml
+vscode-laravel-routes-prompt.md
+**/.DS_Store
