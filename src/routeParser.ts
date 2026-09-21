@@ -8,8 +8,12 @@ export interface LaravelRoute {
   name: string | null;
   /** "App\Http\Controllers\UserController@index" または "Closure" など */
   action: string;
-  /** 解決済みミドルウェアのクラス名の配列 */
+  /** ミドルウェア名の配列。通常は "web", "auth", "throttle:60,1" のようなエイリアス名 */
   middleware: string[];
+  /** クロージャルートの定義位置（Laravel 12 以降）。プロジェクトルートからの相対パス */
+  path: { file: string; line: number } | null;
+  /** vendor パッケージが定義したルートか（Laravel 9 以降） */
+  vendor: boolean;
 }
 
 interface RawRoute {
@@ -19,6 +23,8 @@ interface RawRoute {
   name?: string | null;
   action?: string;
   middleware?: string[] | string;
+  path?: string | null;
+  vendor?: boolean;
 }
 
 const ALL_METHODS = ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'];
@@ -68,7 +74,21 @@ function normalize(raw: RawRoute): LaravelRoute {
     name: raw.name ?? null,
     action: raw.action ?? '',
     middleware,
+    path: parsePath(raw.path),
+    vendor: raw.vendor === true,
   };
+}
+
+/** "routes/web.php:12" → { file: "routes/web.php", line: 12 } */
+function parsePath(path: string | null | undefined): LaravelRoute['path'] {
+  if (!path) {
+    return null;
+  }
+  const match = /^(.*):(\d+)$/.exec(path);
+  if (!match) {
+    return { file: path, line: 1 };
+  }
+  return { file: match[1], line: Number(match[2]) };
 }
 
 export function normalizeMethods(method: string): string[] {

@@ -7,9 +7,20 @@ import { LaravelRoute } from './routeParser';
  * ルートに対応するソース位置を開く。
  * - "Class@method" → クラスのファイルを開き、メソッド定義行へ
  * - "Class"（Invokable）→ __invoke へ
- * - "Closure" → routes/ 配下からルート名または URI を検索して定義行へ（ベストエフォート）
+ * - "Closure" → route:list の path（Laravel 12 以降）があればその位置へ。
+ *   なければ routes/ 配下からルート名または URI を検索して定義行へ（ベストエフォート）
  */
 export async function openRoute(route: LaravelRoute, projectRoot: string): Promise<void> {
+  if (route.path) {
+    const file = path.resolve(projectRoot, route.path.file);
+    if (fs.existsSync(file)) {
+      const document = await vscode.workspace.openTextDocument(file);
+      const line = Math.max(0, route.path.line - 1);
+      await showAt(document, new vscode.Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex));
+      return;
+    }
+  }
+
   if (route.action === '' || route.action === 'Closure') {
     await openClosureRoute(route, projectRoot);
     return;

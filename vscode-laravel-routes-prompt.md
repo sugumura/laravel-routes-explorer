@@ -32,16 +32,16 @@ Laravel プロジェクトのルート一覧をサイドバーに表示する VS
 - コントローラのクラス名からファイルパスを解決する（`App\Http\Controllers\UserController` → `app/Http/Controllers/UserController.php`）
 - メソッド名でファイル内を検索し、`public function メソッド名(` の行に移動する
 - Invokable コントローラ（`@メソッド` がない action）は `__invoke` に移動する
-- クロージャルートは `route:list --json` に定義位置が含まれないため、`routes/` 配下の PHP ファイルから URI またはルート名を検索して移動する（ベストエフォート。見つからなければ通知を出す）
+- クロージャルートは Laravel 12 以降なら `route:list --json` の `path`（`routes/web.php:12` 形式）で正確に移動できる。`path` がない Laravel 11 では `routes/` 配下の PHP ファイルから URI またはルート名を検索して移動する（ベストエフォート。見つからなければ通知を出す）
 - コントローラファイルが見つからない場合はエラー通知を出す
 
 ### 3. ミドルウェアによるフィルタリング
 
 - ビュータイトルにフィルターボタンを置き、クリックで QuickPick（複数選択可）を開く。候補は取得済みルートから抽出したミドルウェア名
-- `route:list --json` の `middleware` は解決済みのクラス名（例: `Illuminate\Auth\Middleware\Authenticate:sanctum`）で出力される。候補にはクラスの短縮名を表示し、一致判定は完全一致で行う
+- `route:list --json` の `middleware` は `web`、`auth`、`throttle:60,1` のようなエイリアス名の配列（Laravel 13 で確認）。念のためクラス名で出た場合も短縮名で表示し、一致判定は完全一致で行う
 - 複数ミドルウェアの AND 条件で絞り込めるようにする
 - フィルター中はビュータイトルにクリアボタンを表示する（`when` 句でコンテキストキーを見る）
-- フィルター中は `TreeView.message` に「フィルター: Authenticate, EnsureEmailIsVerified」のように現在の条件を表示する
+- フィルター中は `TreeView.message` に「フィルター: auth, verified」のように現在の条件を表示する
 
 ## 追加機能（あれば嬉しい）
 
