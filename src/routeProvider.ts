@@ -21,6 +21,11 @@ export class RouteItem extends vscode.TreeItem {
       new vscode.ThemeColor(METHOD_COLORS[route.methods[0]] ?? 'charts.foreground'),
     );
     this.contextValue = 'route';
+    this.command = {
+      command: 'laravelRoutes.open',
+      title: 'Open Route Source',
+      arguments: [route],
+    };
   }
 }
 

@@ -57,6 +57,10 @@
       {
         "command": "laravelRoutes.showOutput",
         "title": "Laravel Routes: Show Output"
+      },
+      {
+        "command": "laravelRoutes.open",
+        "title": "Laravel Routes: Open Route Source"
       }
     ],
     "menus": {
@@ -65,6 +69,12 @@
           "command": "laravelRoutes.refresh",
           "when": "view == laravelRoutes.routes",
           "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "laravelRoutes.open",
+          "when": "false"
         }
       ]
     },

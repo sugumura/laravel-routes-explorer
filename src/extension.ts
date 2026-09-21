@@ -2,7 +2,8 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { runRouteList } from './artisan';
-import { parseRouteList } from './routeParser';
+import { openRoute } from './navigation';
+import { LaravelRoute, parseRouteList } from './routeParser';
 import { RouteTreeProvider } from './routeProvider';
 
 const VIEW_ID = 'laravelRoutes.routes';
@@ -11,12 +12,25 @@ export function activate(context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel('Laravel Routes');
   const provider = new RouteTreeProvider();
   const treeView = vscode.window.createTreeView(VIEW_ID, { treeDataProvider: provider });
+  let projectRoot: string | undefined;
 
   context.subscriptions.push(
     output,
     treeView,
     vscode.commands.registerCommand('laravelRoutes.refresh', () => load()),
     vscode.commands.registerCommand('laravelRoutes.showOutput', () => output.show()),
+    vscode.commands.registerCommand('laravelRoutes.open', async (route: LaravelRoute) => {
+      if (!projectRoot) {
+        return;
+      }
+      try {
+        await openRoute(route, projectRoot);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        output.appendLine(`ERROR (open): ${message}`);
+        void vscode.window.showErrorMessage(`Laravel Routes: ${message}`);
+      }
+    }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => load()),
   );
 
@@ -28,7 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     loading = true;
     try {
-      const projectRoot = findLaravelProjectRoot();
+      projectRoot = findLaravelProjectRoot();
       await setContext('hasProject', projectRoot !== undefined);
       await setContext('loadError', false);
 
@@ -40,9 +54,10 @@ export function activate(context: vscode.ExtensionContext): void {
         return;
       }
 
+      const root = projectRoot;
       const routes = await vscode.window.withProgress(
         { location: { viewId: VIEW_ID } },
-        async () => parseRouteList(await runRouteList(projectRoot, output)),
+        async () => parseRouteList(await runRouteList(root, output)),
       );
 
       provider.setRoutes(routes);
