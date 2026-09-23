@@ -9,3 +9,4 @@ vscode-laravel-routes-prompt.md
 .gitignore
 sample-app/**
 scripts/**
+.github/**

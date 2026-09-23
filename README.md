@@ -124,6 +124,20 @@ pnpm run package
 
 `laravel-routes-explorer-<version>.vsix` が生成されます。pnpm の `node_modules` 構成は `vsce` が解釈できないため `--no-dependencies` を付けています。ランタイム依存パッケージを追加する場合はバンドラー（esbuild など）の導入が必要です。
 
+## リリース
+
+`v` で始まるタグを push すると、GitHub Actions が vsix をビルドして GitHub Release に添付します（[release.yml](.github/workflows/release.yml)）。
+
+1. `package.json` の `version` を上げ、`CHANGELOG.md` に変更内容を書いてコミットする
+2. バージョンと同じ名前のタグを付けて push する
+
+```sh
+git tag v0.0.2
+git push origin main v0.0.2
+```
+
+タグと `package.json` の `version` が一致しないとワークフローは失敗します。`v0.1.0-beta.1` のようにハイフンを含むタグはプレリリースとして公開されます。リリースノートはコミット履歴から自動生成されます。
+
 ## ライセンス
 
 MIT
