@@ -3,6 +3,31 @@
 set -eu
 cd "$(dirname "$0")/.."
 
+# 最新の laravel/laravel が要求する PHP の最低バージョン（Laravel 13 時点）
+PHP_MIN_MAJOR=8
+PHP_MIN_MINOR=3
+
+if ! command -v composer >/dev/null 2>&1; then
+  echo "composer が見つかりません。https://getcomposer.org/ からインストールしてください。" >&2
+  exit 1
+fi
+
+if ! command -v php >/dev/null 2>&1; then
+  echo "php が見つかりません。PHP ${PHP_MIN_MAJOR}.${PHP_MIN_MINOR} 以上をインストールしてください。" >&2
+  exit 1
+fi
+
+PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
+PHP_MAJOR=${PHP_VERSION%%.*}
+PHP_MINOR=${PHP_VERSION#*.}
+if [ "$PHP_MAJOR" -lt "$PHP_MIN_MAJOR" ] || { [ "$PHP_MAJOR" -eq "$PHP_MIN_MAJOR" ] && [ "$PHP_MINOR" -lt "$PHP_MIN_MINOR" ]; }; then
+  echo "PHP ${PHP_MIN_MAJOR}.${PHP_MIN_MINOR} 以上が必要です（現在: $(php -r 'echo PHP_VERSION;')）。" >&2
+  exit 1
+fi
+
+echo "composer: $(composer --version --no-ansi 2>/dev/null | head -1)"
+echo "php: $(php -r 'echo PHP_VERSION;')"
+
 if [ -d sample-app ]; then
   echo "sample-app/ は既に存在します。作り直す場合は削除してから実行してください。" >&2
   exit 1
