@@ -4,25 +4,14 @@ import * as vscode from 'vscode';
 import { LaravelRoute } from './routeParser';
 
 /**
- * ルートに対応するソース位置を開く。
+ * ルートの処理本体（ソース）を開く。
  * - "Class@method" → クラスのファイルを開き、メソッド定義行へ
  * - "Class"（Invokable）→ __invoke へ
- * - "Closure" → route:list の path（Laravel 12 以降）があればその位置へ。
- *   なければ routes/ 配下からルート名または URI を検索して定義行へ（ベストエフォート）
+ * - "Closure" → ルート定義と同じ場所（openRouteDefinition に委譲）
  */
-export async function openRoute(route: LaravelRoute, projectRoot: string): Promise<void> {
-  if (route.path) {
-    const file = path.resolve(projectRoot, route.path.file);
-    if (fs.existsSync(file)) {
-      const document = await vscode.workspace.openTextDocument(file);
-      const line = Math.max(0, route.path.line - 1);
-      await showAt(document, new vscode.Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex));
-      return;
-    }
-  }
-
+export async function openRouteSource(route: LaravelRoute, projectRoot: string): Promise<void> {
   if (route.action === '' || route.action === 'Closure') {
-    await openClosureRoute(route, projectRoot);
+    await openRouteDefinition(route, projectRoot);
     return;
   }
 
@@ -110,13 +99,28 @@ function loadPsr4Map(projectRoot: string): Psr4Entry[] {
   return entries.sort((a, b) => b.prefix.length - a.prefix.length);
 }
 
-// --- クロージャルート -------------------------------------------------------
+// --- ルート定義 -------------------------------------------------------------
 
-async function openClosureRoute(route: LaravelRoute, projectRoot: string): Promise<void> {
+/**
+ * ルートを定義している行（routes/*.php など）を開く。
+ * - route:list の path（Laravel 12 以降のクロージャルート）があればその位置へ
+ * - なければ routes/ 配下からルート名または URI を検索する（ベストエフォート）
+ */
+export async function openRouteDefinition(route: LaravelRoute, projectRoot: string): Promise<void> {
+  if (route.path) {
+    const file = path.resolve(projectRoot, route.path.file);
+    if (fs.existsSync(file)) {
+      const document = await vscode.workspace.openTextDocument(file);
+      const line = Math.min(Math.max(0, route.path.line - 1), document.lineCount - 1);
+      await showAt(document, new vscode.Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex));
+      return;
+    }
+  }
+
   const files = await vscode.workspace.findFiles(new vscode.RelativePattern(projectRoot, 'routes/**/*.php'));
   const sortedFiles = files.map((f) => f.fsPath).sort();
 
-  for (const pattern of closurePatterns(route)) {
+  for (const pattern of definitionPatterns(route)) {
     for (const file of sortedFiles) {
       const text = await fs.promises.readFile(file, 'utf8');
       const position = findPosition(text, pattern);
@@ -131,10 +135,16 @@ async function openClosureRoute(route: LaravelRoute, projectRoot: string): Promi
   void vscode.window.showErrorMessage(`Laravel Routes: ルート定義が見つかりません: ${route.uri}`);
 }
 
-/** 検索パターンを確度の高い順に返す */
-function closurePatterns(route: LaravelRoute): RegExp[] {
+/**
+ * ルート定義を探す検索パターンを確度の高い順に返す。
+ * 1. ->name('full.name')  2. ->name('lastSegment')（グループの name プレフィックス対応）
+ * 3. URI の連続する部分列を長いものから。同じ長さなら末尾側を優先
+ *    例: api/posts/{post} → api/posts, posts/{post} → {post}, posts, api
+ *    （prefix グループ、Route::resource、フレームワークが付ける api/ プレフィックスに対応）
+ */
+export function definitionPatterns(route: LaravelRoute): RegExp[] {
   const patterns: RegExp[] = [];
-  const quoted = (s: string) => `['"]${escapeRegExp(s)}['"]`;
+  const quoted = (s: string) => `['"]/?${escapeRegExp(s)}['"]`;
 
   if (route.name) {
     patterns.push(new RegExp(`name\\(\\s*${quoted(route.name)}`));
@@ -146,12 +156,14 @@ function closurePatterns(route: LaravelRoute): RegExp[] {
 
   const uri = route.uri.replace(/^\//, '');
   if (uri === '') {
-    patterns.push(new RegExp(quoted('/')));
-  } else {
-    patterns.push(new RegExp(`['"]/?${escapeRegExp(uri)}['"]`));
-    const lastSegment = uri.split('/').pop();
-    if (lastSegment && lastSegment !== uri) {
-      patterns.push(new RegExp(`['"]/?${escapeRegExp(lastSegment)}['"]`));
+    patterns.push(new RegExp(`['"]/['"]`));
+    return patterns;
+  }
+
+  const segments = uri.split('/');
+  for (let length = segments.length; length >= 1; length--) {
+    for (let start = segments.length - length; start >= 0; start--) {
+      patterns.push(new RegExp(quoted(segments.slice(start, start + length).join('/'))));
     }
   }
   return patterns;

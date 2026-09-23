@@ -64,10 +64,6 @@
         "title": "Laravel Routes: Show Output"
       },
       {
-        "command": "laravelRoutes.open",
-        "title": "Laravel Routes: Open Route Source"
-      },
-      {
         "command": "laravelRoutes.filter",
         "title": "Laravel Routes: Filter by Middleware",
         "icon": "$(filter)"
@@ -76,6 +72,14 @@
         "command": "laravelRoutes.clearFilter",
         "title": "Laravel Routes: Clear Filter",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "laravelRoutes.openSource",
+        "title": "Go to Source"
+      },
+      {
+        "command": "laravelRoutes.openDefinition",
+        "title": "Go to Route Definition"
       }
     ],
     "menus": {
@@ -98,16 +102,32 @@
       ],
       "commandPalette": [
         {
-          "command": "laravelRoutes.open",
-          "when": "false"
-        },
-        {
           "command": "laravelRoutes.filter",
           "when": "laravelRoutes.hasProject"
         },
         {
           "command": "laravelRoutes.clearFilter",
           "when": "laravelRoutes.filterActive"
+        },
+        {
+          "command": "laravelRoutes.openSource",
+          "when": "false"
+        },
+        {
+          "command": "laravelRoutes.openDefinition",
+          "when": "false"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "laravelRoutes.openSource",
+          "when": "view == laravelRoutes.routes && viewItem == route",
+          "group": "navigation@1"
+        },
+        {
+          "command": "laravelRoutes.openDefinition",
+          "when": "view == laravelRoutes.routes && viewItem == route",
+          "group": "navigation@2"
         }
       ]
     },

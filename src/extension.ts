@@ -2,9 +2,9 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
 import { runRouteList } from './artisan';
-import { openRoute } from './navigation';
+import { openRouteDefinition, openRouteSource } from './navigation';
 import { LaravelRoute, parseRouteList } from './routeParser';
-import { RouteTreeProvider, shortMiddleware } from './routeProvider';
+import { RouteItem, RouteTreeProvider, shortMiddleware } from './routeProvider';
 
 const VIEW_ID = 'laravelRoutes.routes';
 
@@ -21,18 +21,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('laravelRoutes.showOutput', () => output.show()),
     vscode.commands.registerCommand('laravelRoutes.filter', () => pickFilter()),
     vscode.commands.registerCommand('laravelRoutes.clearFilter', () => applyFilter([])),
-    vscode.commands.registerCommand('laravelRoutes.open', async (route: LaravelRoute) => {
-      if (!projectRoot) {
-        return;
-      }
-      try {
-        await openRoute(route, projectRoot);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        output.appendLine(`ERROR (open): ${message}`);
-        void vscode.window.showErrorMessage(`Laravel Routes: ${message}`);
-      }
-    }),
+    vscode.commands.registerCommand('laravelRoutes.openSource', (arg: RouteItem | LaravelRoute) =>
+      navigate(arg, openRouteSource),
+    ),
+    vscode.commands.registerCommand('laravelRoutes.openDefinition', (arg: RouteItem | LaravelRoute) =>
+      navigate(arg, openRouteDefinition),
+    ),
     vscode.workspace.onDidChangeWorkspaceFolders(() => load()),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('laravelRoutes')) {
@@ -84,6 +78,24 @@ export function activate(context: vscode.ExtensionContext): void {
       });
     } finally {
       loading = false;
+    }
+  }
+
+  /** クリック（LaravelRoute）と右クリックメニュー（RouteItem）の両方から呼ばれる */
+  async function navigate(
+    arg: RouteItem | LaravelRoute,
+    open: (route: LaravelRoute, projectRoot: string) => Promise<void>,
+  ): Promise<void> {
+    if (!projectRoot) {
+      return;
+    }
+    const route = arg instanceof RouteItem ? arg.route : arg;
+    try {
+      await open(route, projectRoot);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      output.appendLine(`ERROR (navigate): ${message}`);
+      void vscode.window.showErrorMessage(`Laravel Routes: ${message}`);
     }
   }
 

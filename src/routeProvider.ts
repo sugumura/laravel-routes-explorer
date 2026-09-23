@@ -22,7 +22,7 @@ export class RouteItem extends vscode.TreeItem {
     );
     this.contextValue = 'route';
     this.command = {
-      command: 'laravelRoutes.open',
+      command: 'laravelRoutes.openSource',
       title: 'Open Route Source',
       arguments: [route],
     };

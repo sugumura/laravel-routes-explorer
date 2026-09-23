@@ -2,6 +2,7 @@
 
 ## 0.0.2
 
+- 右クリックメニューに「Go to Source」と「Go to Route Definition」を追加
 - 開発・ビルド環境を Node.js 24 以上に統一
 - リリースワークフローの action を Node 24 対応版に更新
 - 動作確認用プロジェクト作成スクリプトを日英対応にし、`--php` / `--composer` オプションを追加
