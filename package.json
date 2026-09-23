@@ -2,7 +2,7 @@
   "name": "laravel-routes-explorer",
   "displayName": "Laravel Routes Explorer",
   "description": "Laravel プロジェクトのルート一覧をサイドバーに表示します",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "sugumura",
   "license": "MIT",
   "repository": {

@@ -26,7 +26,7 @@ Laravel プロジェクトのルート一覧を VSCode のサイドバーに表�
 マーケットプレイスには公開していません。`.vsix` ファイルからインストールします。
 
 ```sh
-code --install-extension laravel-routes-explorer-0.0.1.vsix
+code --install-extension laravel-routes-explorer-0.0.2.vsix
 ```
 
 または VSCode の拡張機能ビューで「…」メニューから「VSIX からのインストール」を選びます。
