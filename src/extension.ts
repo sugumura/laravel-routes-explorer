@@ -34,6 +34,11 @@ export function activate(context: vscode.ExtensionContext): void {
       }
     }),
     vscode.workspace.onDidChangeWorkspaceFolders(() => load()),
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('laravelRoutes')) {
+        void load();
+      }
+    }),
   );
 
   let loading = false;
@@ -44,17 +49,19 @@ export function activate(context: vscode.ExtensionContext): void {
     }
     loading = true;
     try {
-      projectRoot = findLaravelProjectRoot();
+      projectRoot = await findLaravelProjectRoot(output);
       await setContext('hasProject', projectRoot !== undefined);
       await setContext('loadError', false);
+      treeView.description = projectRoot ? describeProjectRoot(projectRoot) : undefined;
 
       if (!projectRoot) {
         provider.setRoutes([]);
         treeView.badge = undefined;
         treeView.message = undefined;
-        output.appendLine('artisan ファイルが見つかりません。');
+        output.appendLine('artisan ファイルが見つかりません。設定 laravelRoutes.projectRoot で指定できます。');
         return;
       }
+      output.appendLine(`project: ${projectRoot}`);
 
       const root = projectRoot;
       const routes = await vscode.window.withProgress(
@@ -123,15 +130,55 @@ export function activate(context: vscode.ExtensionContext): void {
 
 export function deactivate(): void {}
 
-/** ワークスペースフォルダ直下に artisan があるフォルダを探す。最初に見つかったものを返す */
-function findLaravelProjectRoot(): string | undefined {
-  for (const folder of vscode.workspace.workspaceFolders ?? []) {
-    const root = folder.uri.fsPath;
-    if (fs.existsSync(path.join(root, 'artisan'))) {
+/**
+ * Laravel プロジェクトのルートを探す。優先順位:
+ * 1. 設定 laravelRoutes.projectRoot（ワークスペースフォルダからの相対パスまたは絶対パス）
+ * 2. ワークスペースフォルダ直下の artisan
+ * 3. ワークスペース内を探索して最初に見つかった artisan（vendor, node_modules は除く）
+ */
+async function findLaravelProjectRoot(output: vscode.OutputChannel): Promise<string | undefined> {
+  const folders = vscode.workspace.workspaceFolders ?? [];
+
+  for (const folder of folders) {
+    const configured = vscode.workspace
+      .getConfiguration('laravelRoutes', folder.uri)
+      .get<string>('projectRoot', '')
+      .trim();
+    if (configured === '') {
+      continue;
+    }
+    const root = path.resolve(folder.uri.fsPath, configured);
+    if (hasArtisan(root)) {
       return root;
     }
+    output.appendLine(`laravelRoutes.projectRoot に artisan がありません: ${root}`);
+    void vscode.window.showWarningMessage(`Laravel Routes: 設定 laravelRoutes.projectRoot に artisan がありません: ${configured}`);
+  }
+
+  for (const folder of folders) {
+    if (hasArtisan(folder.uri.fsPath)) {
+      return folder.uri.fsPath;
+    }
+  }
+
+  const found = await vscode.workspace.findFiles('**/artisan', '**/{vendor,node_modules,storage,.git}/**', 1);
+  if (found.length > 0) {
+    return path.dirname(found[0].fsPath);
   }
   return undefined;
+}
+
+function hasArtisan(dir: string): boolean {
+  return fs.existsSync(path.join(dir, 'artisan'));
+}
+
+/** ワークスペースフォルダ直下でなければ、ビューの説明に相対パスを出す */
+function describeProjectRoot(projectRoot: string): string | undefined {
+  const folder = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(projectRoot));
+  if (!folder || folder.uri.fsPath === projectRoot) {
+    return undefined;
+  }
+  return path.relative(folder.uri.fsPath, projectRoot);
 }
 
 function setContext(key: string, value: boolean): Thenable<unknown> {

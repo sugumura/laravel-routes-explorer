@@ -39,7 +39,7 @@
     "viewsWelcome": [
       {
         "view": "laravelRoutes.routes",
-        "contents": "Laravel プロジェクトが見つかりません。\nワークスペースフォルダ直下に artisan ファイルがあるプロジェクトを開いてください。",
+        "contents": "Laravel プロジェクトが見つかりません。\nワークスペース内に artisan ファイルがあるフォルダがあるか確認してください。サブフォルダにある場合は設定 laravelRoutes.projectRoot で指定できます。\n[設定を開く](command:workbench.action.openSettings?%5B%22laravelRoutes%22%5D)",
         "when": "!laravelRoutes.hasProject"
       },
       {
@@ -109,15 +109,23 @@
     "configuration": {
       "title": "Laravel Routes Explorer",
       "properties": {
-        "laravelRoutes.phpPath": {
+        "laravelRoutes.command": {
           "type": "string",
-          "default": "php",
-          "description": "artisan の実行に使う PHP の実行ファイル。Docker などでホストに PHP がない場合はラッパースクリプトのパスを指定します。"
+          "default": "php artisan route:list --json",
+          "scope": "resource",
+          "markdownDescription": "ルート一覧を取得するコマンド。プロジェクトルートを cwd としてシェル経由で実行します。`${projectRoot}` と `${workspaceFolder}` を使えます。\n\n例:\n- Sail: `vendor/bin/sail artisan route:list --json`\n- Docker Compose: `docker compose exec -T app php artisan route:list --json`"
+        },
+        "laravelRoutes.projectRoot": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "markdownDescription": "Laravel プロジェクト（`artisan` があるフォルダ）のパス。ワークスペースフォルダからの相対パスまたは絶対パス。空なら自動検出します。"
         },
         "laravelRoutes.exceptVendor": {
           "type": "boolean",
           "default": false,
-          "description": "vendor パッケージが定義したルートを除外します（route:list --except-vendor）。"
+          "description": "vendor パッケージが定義したルートを除外します（route:list --except-vendor）。",
+          "scope": "resource"
         }
       }
     }

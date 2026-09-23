@@ -24,7 +24,7 @@ Laravel プロジェクトのルート一覧をサイドバーに表示する VS
 - 一覧はフラット表示。label に「メソッド URI」、description にルート名とコントローラ@メソッド、tooltip にミドルウェア一覧を出す
 - 行アイコンの色を HTTP メソッドごとに変える（GET=緑、POST=青、PUT/PATCH=黄、DELETE=赤、その他=グレー）。`ThemeColor` の `charts.*` を使いテーマに追従させる
 - `method` は `GET|HEAD` のように結合されているので、GET があれば HEAD は隠す。全メソッドを持つルートは `ANY` と表示する
-- ワークスペースフォルダ直下に `artisan` ファイルがない場合は `viewsWelcome` で「Laravel プロジェクトが見つかりません」と表示する
+- `artisan` ファイルが見つからない場合は `viewsWelcome` で「Laravel プロジェクトが見つかりません」と表示し、設定を開くリンクを出す
 
 ### 2. コントローラへのジャンプ
 
@@ -50,8 +50,8 @@ Laravel プロジェクトのルート一覧をサイドバーに表示する VS
 
 ## 技術的な要件
 
-- `php artisan route:list --json` の実行は `child_process.execFile` を使い、`artisan` のあるフォルダを cwd にする。`maxBuffer` を大きめにし、timeout を設定する
-- PHP のパスは設定 `laravelRoutes.phpPath` で変更できるようにする（デフォルト: `php`）。Docker 等で PHP がホストにない場合はラッパースクリプトを指定する運用とする
+- ルート取得コマンドは設定 `laravelRoutes.command` で丸ごと差し替えられるようにする（デフォルト: `php artisan route:list --json`）。Docker や Sail のコマンドを書けるよう、`artisan` のあるフォルダを cwd にしてシェル経由（`child_process.exec`）で実行する。`maxBuffer` を大きめにし、timeout を設定する
+- プロジェクトの場所は設定 `laravelRoutes.projectRoot` で指定できるようにする。未設定ならワークスペースフォルダ直下、次にワークスペース内の探索で `artisan` を自動検出する
 - 設定 `laravelRoutes.exceptVendor` で `--except-vendor` を付けられるようにする（デフォルト: false）
 - 標準出力に JSON 以外が混ざることがあるので、先頭の `[` から末尾の `]` までを切り出して解析する。ルートが 0 件のときは JSON が出ないので空配列として扱う
 - artisan の実行に失敗した場合はエラー内容を出力パネル「Laravel Routes」に表示し、通知から出力パネルを開けるようにする

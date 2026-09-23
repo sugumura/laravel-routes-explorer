@@ -19,7 +19,7 @@ Laravel プロジェクトのルート一覧を VSCode のサイドバーに表�
 
 - VSCode 1.85 以上
 - Laravel 11 以上、PHP 8.2 以上のプロジェクト
-- `php artisan` がホストから実行できること（後述の設定で実行ファイルを変更可能）
+- `php artisan` を実行できること。Docker などホストに PHP がない環境でも、後述の設定でコマンドを差し替えれば使えます
 
 ## インストール
 
@@ -33,7 +33,7 @@ code --install-extension laravel-routes-explorer-0.0.1.vsix
 
 ## 使い方
 
-1. ワークスペースフォルダ直下に `artisan` があるプロジェクトを開く
+1. Laravel プロジェクトを開く。`artisan` はワークスペースフォルダ直下でなくても自動検出される（サブフォルダにある場合はビュー名の横に相対パスが表示される）
 2. アクティビティバーの「Laravel Routes」アイコンをクリック
 3. ルート一覧が表示される。読み込み中はビューにプログレスバーが出る
 4. ルートをクリックするとソースへジャンプ
@@ -47,31 +47,46 @@ code --install-extension laravel-routes-explorer-0.0.1.vsix
 
 | 設定 | 既定値 | 説明 |
 |---|---|---|
-| `laravelRoutes.phpPath` | `php` | artisan の実行に使う PHP の実行ファイル |
+| `laravelRoutes.command` | `php artisan route:list --json` | ルート一覧を取得するコマンド。プロジェクトルートを cwd としてシェル経由で実行する |
+| `laravelRoutes.projectRoot` | `""` | `artisan` があるフォルダ。ワークスペースフォルダからの相対パスまたは絶対パス。空なら自動検出 |
 | `laravelRoutes.exceptVendor` | `false` | vendor パッケージが定義したルートを除外する（`--except-vendor`） |
 
-### PHP が Docker の中にある場合
+設定はワークスペース単位（`.vscode/settings.json`）で指定できます。変更すると自動で再読み込みします。
 
-`laravelRoutes.phpPath` にラッパースクリプトを指定します。例:
+### プロジェクトがサブフォルダにある場合
 
-```sh
-#!/bin/sh
-# ~/bin/php-in-docker
-exec docker compose exec -T app php "$@"
-```
+自動検出はワークスペースフォルダ直下、次にワークスペース内の探索（`vendor`, `node_modules` は除く）の順で `artisan` を探します。複数ある場合や探索に時間がかかる場合は明示します。
 
 ```json
 {
-  "laravelRoutes.phpPath": "/Users/you/bin/php-in-docker"
+  "laravelRoutes.projectRoot": "backend"
 }
 ```
 
-Laravel Sail の場合は `vendor/bin/sail php "$@"` を実行するスクリプトにします。
+### Docker や Sail で実行する場合
+
+`laravelRoutes.command` にコマンド全体を指定します。コマンドは `projectRoot` を cwd として `/bin/sh` 経由で実行されます。`${projectRoot}` と `${workspaceFolder}` は実際のパスに展開されます。
+
+```json
+{
+  "laravelRoutes.command": "docker compose exec -T app php artisan route:list --json"
+}
+```
+
+Laravel Sail:
+
+```json
+{
+  "laravelRoutes.command": "vendor/bin/sail artisan route:list --json"
+}
+```
+
+コンテナ内の `route:list` が返すパスはプロジェクトルートからの相対パスなので、ソースをホストにマウントしていればジャンプもそのまま動きます。コントローラの解決には `vendor/composer/autoload_psr4.php` をホストから読めることが必要です。
 
 ## 制限事項
 
 - Laravel 11 ではクロージャルートの定義位置が `route:list` に含まれないため、ファイル検索による推測です。`Route::prefix()` などで URI が組み立てられていると見つからないことがあります
-- 複数のワークスペースフォルダに Laravel プロジェクトがある場合、最初に見つかったものだけを対象にします
+- 複数の Laravel プロジェクトがある場合、最初に見つかったものだけを対象にします。`laravelRoutes.projectRoot` で明示してください
 - `route:list` は Laravel アプリを起動するため、`.env` の不備などで失敗することがあります
 
 ## 開発
