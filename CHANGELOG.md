@@ -1,10 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- パス（URI の部分一致）による絞り込みを追加。ミドルウェアの絞り込みと組み合わせ可能
+- `routes/` 配下の変更を監視して自動で再読み込み（`laravelRoutes.watchRoutes` で無効化可能）
+
 ## 0.1.0
 
 - 右クリックメニューに「Go to Source」と「Go to Route Definition」を追加
-- パス（URI の部分一致）による絞り込みを追加。ミドルウェアの絞り込みと組み合わせ可能
-- `routes/` 配下の変更を監視して自動で再読み込み（`laravelRoutes.watchRoutes` で無効化可能）
 - README を英語化し、日本語版を docs/ に移動。スクリーンショットを追加
 - 開発・ビルド環境を Node.js 24 以上に統一
 - リリースワークフローの action を Node 24 対応版に更新

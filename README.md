@@ -33,7 +33,7 @@ It runs `php artisan route:list --json`, shows the result as a tree, and jumps t
 The extension is not published on the Marketplace. Install it from the `.vsix` file attached to a [GitHub Release](https://github.com/sugumura/laravel-routes-explorer/releases).
 
 ```sh
-code --install-extension laravel-routes-explorer-0.1.0.vsix
+code --install-extension laravel-routes-explorer-0.2.0.vsix
 ```
 
 Or choose "Install from VSIX..." from the "..." menu in the Extensions view.
@@ -146,8 +146,8 @@ Pushing a tag that starts with `v` triggers [release.yml](.github/workflows/rele
 2. Tag with the same version and push
 
 ```sh
-git tag v0.1.0
-git push origin main v0.1.0
+git tag v0.2.0
+git push origin main v0.2.0
 ```
 
 The workflow fails when the tag does not match `version` in `package.json`. Tags containing a hyphen such as `v0.1.0-beta.1` are published as pre-releases. Release notes are generated from the commit history.
