@@ -33,6 +33,8 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<RouteItem> {
   private routes: LaravelRoute[] = [];
   /** 絞り込み条件。ミドルウェアの完全な文字列（クラス名:引数）の AND 条件 */
   private filter: string[] = [];
+  /** URI の部分一致（大文字小文字を区別しない）。空なら無条件 */
+  private pathFilter = '';
   private readonly changeEmitter = new vscode.EventEmitter<RouteItem | undefined>();
   readonly onDidChangeTreeData = this.changeEmitter.event;
 
@@ -50,6 +52,19 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<RouteItem> {
     return [...this.filter];
   }
 
+  setPathFilter(text: string): void {
+    this.pathFilter = text.trim();
+    this.changeEmitter.fire(undefined);
+  }
+
+  getPathFilter(): string {
+    return this.pathFilter;
+  }
+
+  hasActiveFilter(): boolean {
+    return this.filter.length > 0 || this.pathFilter !== '';
+  }
+
   /** 取得済みルートに登場するミドルウェアを重複なく返す（短縮名順） */
   getAllMiddleware(): string[] {
     const set = new Set<string>();
@@ -62,10 +77,12 @@ export class RouteTreeProvider implements vscode.TreeDataProvider<RouteItem> {
   }
 
   getVisibleRoutes(): LaravelRoute[] {
-    if (this.filter.length === 0) {
-      return this.routes;
-    }
-    return this.routes.filter((r) => this.filter.every((m) => r.middleware.includes(m)));
+    const needle = this.pathFilter.toLowerCase();
+    return this.routes.filter(
+      (r) =>
+        (needle === '' || r.uri.toLowerCase().includes(needle)) &&
+        this.filter.every((m) => r.middleware.includes(m)),
+    );
   }
 
   getTreeItem(element: RouteItem): vscode.TreeItem {

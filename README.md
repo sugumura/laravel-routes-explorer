@@ -18,7 +18,7 @@ It runs `php artisan route:list --json`, shows the result as a tree, and jumps t
   - Invokable controllers open at `__invoke`
   - Closure routes open at the definition line reported by `route:list` on Laravel 12+, or found by searching `routes/` on Laravel 11 (best effort)
 - Right-click menu with "Go to Source" (same as click) and "Go to Route Definition" (the `Route::...` line under `routes/`)
-- Filter by middleware (multiple selections are combined with AND)
+- Filter by path (case-insensitive substring of the URI) and by middleware (multiple selections are combined with AND). Both filters combine
 - Reload the route list
 - Text search over URIs and route names with the tree's built-in find (`Cmd+F`, or `Ctrl+Alt+F` on Windows/Linux)
 
@@ -46,7 +46,9 @@ When you use VSCode profiles, add `--profile <name>` so the extension goes into 
 3. The route list appears. A progress bar is shown in the view while loading
 4. Click a route to jump to its source. Right-click and choose "Go to Route Definition" to jump to the `Route::get(...)` line instead
 5. View title buttons
-   - Filter: pick middleware to narrow the list. The current filter is shown above the list together with a clear button
+   - Filter by path: type part of a URI such as `admin` or `users/{user}`. Leave it empty to remove the filter
+   - Filter by middleware: pick middleware to narrow the list
+   - The current filters are shown above the list together with a clear button that removes both
    - Refresh: run `route:list` again
 
 If `route:list` fails, a notification is shown. Details are in the "Laravel Routes" output channel.

@@ -80,6 +80,11 @@
       {
         "command": "laravelRoutes.openDefinition",
         "title": "Go to Route Definition"
+      },
+      {
+        "command": "laravelRoutes.filterPath",
+        "title": "Laravel Routes: Filter by Path",
+        "icon": "$(search)"
       }
     ],
     "menus": {
@@ -90,14 +95,19 @@
           "group": "navigation@1"
         },
         {
-          "command": "laravelRoutes.filter",
+          "command": "laravelRoutes.filterPath",
           "when": "view == laravelRoutes.routes",
           "group": "navigation@2"
         },
         {
-          "command": "laravelRoutes.refresh",
+          "command": "laravelRoutes.filter",
           "when": "view == laravelRoutes.routes",
           "group": "navigation@3"
+        },
+        {
+          "command": "laravelRoutes.refresh",
+          "when": "view == laravelRoutes.routes",
+          "group": "navigation@4"
         }
       ],
       "commandPalette": [
@@ -116,6 +126,10 @@
         {
           "command": "laravelRoutes.openDefinition",
           "when": "false"
+        },
+        {
+          "command": "laravelRoutes.filterPath",
+          "when": "laravelRoutes.hasProject"
         }
       ],
       "view/item/context": [

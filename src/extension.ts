@@ -20,7 +20,12 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.commands.registerCommand('laravelRoutes.refresh', () => load()),
     vscode.commands.registerCommand('laravelRoutes.showOutput', () => output.show()),
     vscode.commands.registerCommand('laravelRoutes.filter', () => pickFilter()),
-    vscode.commands.registerCommand('laravelRoutes.clearFilter', () => applyFilter([])),
+    vscode.commands.registerCommand('laravelRoutes.filterPath', () => inputPathFilter()),
+    vscode.commands.registerCommand('laravelRoutes.clearFilter', () => {
+      provider.setFilter([]);
+      provider.setPathFilter('');
+      updateViewState();
+    }),
     vscode.commands.registerCommand('laravelRoutes.openSource', (arg: RouteItem | LaravelRoute) =>
       navigate(arg, openRouteSource),
     ),
@@ -127,14 +132,35 @@ export function activate(context: vscode.ExtensionContext): void {
     updateViewState();
   }
 
+  async function inputPathFilter(): Promise<void> {
+    const text = await vscode.window.showInputBox({
+      value: provider.getPathFilter(),
+      prompt: 'URI に含まれる文字列で絞り込みます。空にすると解除',
+      placeHolder: '例: admin, users/{user}, api/',
+    });
+    if (text === undefined) {
+      return;
+    }
+    provider.setPathFilter(text);
+    updateViewState();
+  }
+
   /** バッジ・メッセージ・コンテキストキーを現在の状態に合わせる */
   function updateViewState(): void {
     const filter = provider.getFilter();
+    const pathFilter = provider.getPathFilter();
     const visible = provider.getVisibleRoutes().length;
     treeView.badge = { value: visible, tooltip: `${visible} routes` };
-    treeView.message =
-      filter.length > 0 ? `フィルター: ${filter.map(shortMiddleware).join(', ')}` : undefined;
-    void setContext('filterActive', filter.length > 0);
+
+    const parts: string[] = [];
+    if (pathFilter !== '') {
+      parts.push(`パス "${pathFilter}"`);
+    }
+    if (filter.length > 0) {
+      parts.push(`ミドルウェア ${filter.map(shortMiddleware).join(', ')}`);
+    }
+    treeView.message = parts.length > 0 ? `フィルター: ${parts.join(' / ')}` : undefined;
+    void setContext('filterActive', provider.hasActiveFilter());
   }
 
   void load();
