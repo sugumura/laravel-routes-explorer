@@ -1,62 +1,69 @@
 # Laravel Routes Explorer
 
-Laravel プロジェクトのルート一覧を VSCode のサイドバーに表示する拡張です。
-`php artisan route:list --json` の結果をツリー表示し、クリックでコントローラの該当メソッドへジャンプできます。
+English | [日本語](docs/README.ja.md)
 
-## 機能
+A VSCode extension that lists the routes of a Laravel project in the sidebar.
+It runs `php artisan route:list --json`, shows the result as a tree, and jumps to the controller method when you click a route.
 
-- アクティビティバーの「Laravel Routes」アイコンからルート一覧を表示
-- HTTP メソッドごとにアイコンの色を変えて表示（GET=緑、POST=青、PUT/PATCH=黄、DELETE=赤、ANY=紫）
-- 各行にルート名とコントローラ@メソッドを表示。ホバーでミドルウェア一覧などの詳細をツールチップ表示
-- ルートをクリックするとコントローラファイルを開き、対象メソッドの行へ移動
-  - Invokable コントローラは `__invoke` へ移動
-  - クロージャルートは Laravel 12 以降なら `route:list` が返す定義位置へ正確に移動。Laravel 11 では `routes/` 配下をルート名・URI で検索（ベストエフォート）
-- 右クリックメニューから「Go to Source」（クリックと同じ）と「Go to Route Definition」（`routes/` 配下の定義行）を選べる
-- ミドルウェアで絞り込み（複数選択で AND 条件）
-- ルート一覧の再読み込み
-- ツリーにフォーカスして `Cmd+F`（Windows/Linux は `Ctrl+Alt+F`）で URI やルート名のテキスト検索
+![Route list filtered by the api middleware, with the controller opened by a click](docs/assets/sample1.png)
 
-## 必要環境
+![QuickPick for selecting one or more middleware to filter by](docs/assets/sample2.png)
 
-- VSCode 1.85 以上
-- Laravel 11 以上、PHP 8.2 以上のプロジェクト
-- `php artisan` を実行できること。Docker などホストに PHP がない環境でも、後述の設定でコマンドを差し替えれば使えます
+## Features
 
-## インストール
+- Route list in the activity bar under the "Laravel Routes" icon
+- Icon color per HTTP method (GET green, POST blue, PUT/PATCH yellow, DELETE red, ANY purple)
+- Route name and controller@method on each row, middleware and other details in the tooltip
+- Click a route to open the controller file at the target method
+  - Invokable controllers open at `__invoke`
+  - Closure routes open at the definition line reported by `route:list` on Laravel 12+, or found by searching `routes/` on Laravel 11 (best effort)
+- Right-click menu with "Go to Source" (same as click) and "Go to Route Definition" (the `Route::...` line under `routes/`)
+- Filter by middleware (multiple selections are combined with AND)
+- Reload the route list
+- Text search over URIs and route names with the tree's built-in find (`Cmd+F`, or `Ctrl+Alt+F` on Windows/Linux)
 
-マーケットプレイスには公開していません。`.vsix` ファイルからインストールします。
+## Requirements
+
+- VSCode 1.85 or later
+- A Laravel 11+ project on PHP 8.2+
+- A way to run `php artisan`. If PHP is not on the host (Docker etc.), the command can be replaced, see Settings
+
+## Installation
+
+The extension is not published on the Marketplace. Install it from the `.vsix` file attached to a [GitHub Release](https://github.com/sugumura/laravel-routes-explorer/releases).
 
 ```sh
 code --install-extension laravel-routes-explorer-0.0.2.vsix
 ```
 
-または VSCode の拡張機能ビューで「…」メニューから「VSIX からのインストール」を選びます。
+Or choose "Install from VSIX..." from the "..." menu in the Extensions view.
+When you use VSCode profiles, add `--profile <name>` so the extension goes into the profile you are using.
 
-## 使い方
+## Usage
 
-1. Laravel プロジェクトを開く。`artisan` はワークスペースフォルダ直下でなくても自動検出される（サブフォルダにある場合はビュー名の横に相対パスが表示される）
-2. アクティビティバーの「Laravel Routes」アイコンをクリック
-3. ルート一覧が表示される。読み込み中はビューにプログレスバーが出る
-4. ルートをクリックするとソースへジャンプ。右クリックで「Go to Route Definition」を選ぶと `Route::get(...)` の定義行へジャンプ
-5. ビュータイトルのボタン
-   - フィルター: ミドルウェアを選んで絞り込み。絞り込み中は一覧上部に条件が表示され、クリアボタンが現れる
-   - 再読み込み: `route:list` を再実行
+1. Open a Laravel project. The `artisan` file does not have to be at the workspace root; it is detected automatically and the relative path is shown next to the view name when it lives in a subfolder
+2. Click the "Laravel Routes" icon in the activity bar
+3. The route list appears. A progress bar is shown in the view while loading
+4. Click a route to jump to its source. Right-click and choose "Go to Route Definition" to jump to the `Route::get(...)` line instead
+5. View title buttons
+   - Filter: pick middleware to narrow the list. The current filter is shown above the list together with a clear button
+   - Refresh: run `route:list` again
 
-`route:list` の実行に失敗した場合は通知が出ます。詳細は出力パネルの「Laravel Routes」チャンネルで確認できます。
+If `route:list` fails, a notification is shown. Details are in the "Laravel Routes" output channel.
 
-## 設定
+## Settings
 
-| 設定 | 既定値 | 説明 |
+| Setting | Default | Description |
 |---|---|---|
-| `laravelRoutes.command` | `php artisan route:list --json` | ルート一覧を取得するコマンド。プロジェクトルートを cwd としてシェル経由で実行する |
-| `laravelRoutes.projectRoot` | `""` | `artisan` があるフォルダ。ワークスペースフォルダからの相対パスまたは絶対パス。空なら自動検出 |
-| `laravelRoutes.exceptVendor` | `false` | vendor パッケージが定義したルートを除外する（`--except-vendor`） |
+| `laravelRoutes.command` | `php artisan route:list --json` | Command that produces the route list. Runs through the shell with the project root as cwd |
+| `laravelRoutes.projectRoot` | `""` | Folder that contains `artisan`, relative to the workspace folder or absolute. Auto-detected when empty |
+| `laravelRoutes.exceptVendor` | `false` | Hide routes defined by vendor packages (`--except-vendor`) |
 
-設定はワークスペース単位（`.vscode/settings.json`）で指定できます。変更すると自動で再読み込みします。
+Settings can be set per workspace in `.vscode/settings.json`. The list reloads automatically when they change.
 
-### プロジェクトがサブフォルダにある場合
+### Project in a subfolder
 
-自動検出はワークスペースフォルダ直下、次にワークスペース内の探索（`vendor`, `node_modules` は除く）の順で `artisan` を探します。複数ある場合や探索に時間がかかる場合は明示します。
+Auto-detection looks at the workspace folder root first, then searches the workspace for `artisan` (skipping `vendor` and `node_modules`). Set the path explicitly when there are several projects or the search is slow.
 
 ```json
 {
@@ -64,9 +71,9 @@ code --install-extension laravel-routes-explorer-0.0.2.vsix
 }
 ```
 
-### Docker や Sail で実行する場合
+### Running through Docker or Sail
 
-`laravelRoutes.command` にコマンド全体を指定します。コマンドは `projectRoot` を cwd として `/bin/sh` 経由で実行されます。`${projectRoot}` と `${workspaceFolder}` は実際のパスに展開されます。
+Put the whole command in `laravelRoutes.command`. It runs via `/bin/sh` with the project root as cwd. `${projectRoot}` and `${workspaceFolder}` are expanded.
 
 ```json
 {
@@ -82,65 +89,65 @@ Laravel Sail:
 }
 ```
 
-コンテナ内の `route:list` が返すパスはプロジェクトルートからの相対パスなので、ソースをホストにマウントしていればジャンプもそのまま動きます。コントローラの解決には `vendor/composer/autoload_psr4.php` をホストから読めることが必要です。
+Paths returned by `route:list` inside the container are relative to the project root, so navigation keeps working as long as the source is mounted on the host. Resolving controllers needs `vendor/composer/autoload_psr4.php` to be readable from the host.
 
-## 制限事項
+## Limitations
 
-- Laravel 11 ではクロージャルートの定義位置が `route:list` に含まれないため、ファイル検索による推測です。`Route::prefix()` などで URI が組み立てられていると見つからないことがあります
-- 複数の Laravel プロジェクトがある場合、最初に見つかったものだけを対象にします。`laravelRoutes.projectRoot` で明示してください
-- `route:list` は Laravel アプリを起動するため、`.env` の不備などで失敗することがあります
+- On Laravel 11 the definition line of closure routes is not part of `route:list`, so it is located by searching files. Routes whose URI is assembled with `Route::prefix()` and similar may not be found
+- With several Laravel projects, only the first one found is used. Set `laravelRoutes.projectRoot` to choose
+- `route:list` boots the Laravel application, so it can fail on a broken `.env` and similar problems
 
-## 開発
+## Development
 
-Node.js 24 以上と pnpm が必要です。
+Node.js 24+ and pnpm are required.
 
 ```sh
 pnpm install
-pnpm run compile   # または pnpm run watch
+pnpm run compile   # or pnpm run watch
 ```
 
-VSCode でこのフォルダを開き `F5` を押すと、拡張開発ホスト（Extension Development Host）が `sample-app/` を開いた状態で起動します。
+Open this folder in VSCode and press `F5` to launch the Extension Development Host with `sample-app/` opened.
 
-### 動作確認用の Laravel プロジェクト
+### Sample Laravel project
 
-`sample-app/` は git 管理外です。次のスクリプトで作成できます（composer が必要）。
+`sample-app/` is not tracked by git. Create it with the script (composer required):
 
 ```sh
 ./scripts/create-sample-app.sh
 ```
 
-PHP 8.3 以上と composer が必要です。別の PHP や composer を使う場合は `--php` と `--composer` でパスを指定します。メッセージは `LANG` に応じて日本語と英語が切り替わり、`--lang ja|en` で固定できます。`--help` でオプション一覧が出ます。
+PHP 8.3+ and composer are required. Use `--php` and `--composer` to point to other executables. Messages follow `LANG` (Japanese or English) and can be fixed with `--lang ja|en`. `--help` lists all options.
 
-コントローラ@メソッド、Invokable、クロージャ、`Route::view` / `Route::redirect`、リソースルート、API ルート、prefix 付きグループ、複数ミドルウェアなど、拡張が扱うパターンを一通り含んだルートが `routes/web.php` と `routes/api.php` に定義されます。
+The generated `routes/web.php` and `routes/api.php` cover the patterns the extension handles: controller@method, invokable controllers, closures, `Route::view` / `Route::redirect`, resource and API resource routes, prefixed groups, and multiple middleware.
 
-- `src/extension.ts` — エントリーポイント。コマンド登録と読み込み処理
-- `src/artisan.ts` — `route:list --json` の実行
-- `src/routeParser.ts` — JSON の解析と正規化
-- `src/routeProvider.ts` — TreeDataProvider とフィルター
-- `src/navigation.ts` — ソースへのジャンプ
+- `src/extension.ts` — entry point, command registration and loading
+- `src/artisan.ts` — runs `route:list --json`
+- `src/routeParser.ts` — parses and normalizes the JSON
+- `src/routeProvider.ts` — TreeDataProvider and filtering
+- `src/navigation.ts` — navigation to source and route definitions
 
-## パッケージ
+## Packaging
 
 ```sh
 pnpm run package
 ```
 
-`laravel-routes-explorer-<version>.vsix` が生成されます。pnpm の `node_modules` 構成は `vsce` が解釈できないため `--no-dependencies` を付けています。ランタイム依存パッケージを追加する場合はバンドラー（esbuild など）の導入が必要です。
+This produces `laravel-routes-explorer-<version>.vsix`. `--no-dependencies` is passed because `vsce` cannot read pnpm's `node_modules` layout. Add a bundler such as esbuild if runtime dependencies are ever added.
 
-## リリース
+## Release
 
-`v` で始まるタグを push すると、GitHub Actions が vsix をビルドして GitHub Release に添付します（[release.yml](.github/workflows/release.yml)）。
+Pushing a tag that starts with `v` triggers [release.yml](.github/workflows/release.yml), which builds the vsix and attaches it to a GitHub Release.
 
-1. `package.json` の `version` を上げ、`CHANGELOG.md` に変更内容を書いてコミットする
-2. バージョンと同じ名前のタグを付けて push する
+1. Bump `version` in `package.json`, describe the changes in `CHANGELOG.md`, and commit
+2. Tag with the same version and push
 
 ```sh
 git tag v0.0.2
 git push origin main v0.0.2
 ```
 
-タグと `package.json` の `version` が一致しないとワークフローは失敗します。`v0.1.0-beta.1` のようにハイフンを含むタグはプレリリースとして公開されます。リリースノートはコミット履歴から自動生成されます。
+The workflow fails when the tag does not match `version` in `package.json`. Tags containing a hyphen such as `v0.1.0-beta.1` are published as pre-releases. Release notes are generated from the commit history.
 
-## ライセンス
+## License
 
 MIT
