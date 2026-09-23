@@ -19,7 +19,7 @@ It runs `php artisan route:list --json`, shows the result as a tree, and jumps t
   - Closure routes open at the definition line reported by `route:list` on Laravel 12+, or found by searching `routes/` on Laravel 11 (best effort)
 - Right-click menu with "Go to Source" (same as click) and "Go to Route Definition" (the `Route::...` line under `routes/`)
 - Filter by path (case-insensitive substring of the URI) and by middleware (multiple selections are combined with AND). Both filters combine
-- Reload the route list
+- Reload the route list. Files under `routes/` are watched and the list reloads automatically when they change
 - Text search over URIs and route names with the tree's built-in find (`Cmd+F`, or `Ctrl+Alt+F` on Windows/Linux)
 
 ## Requirements
@@ -60,6 +60,7 @@ If `route:list` fails, a notification is shown. Details are in the "Laravel Rout
 | `laravelRoutes.command` | `php artisan route:list --json` | Command that produces the route list. Runs through the shell with the project root as cwd |
 | `laravelRoutes.projectRoot` | `""` | Folder that contains `artisan`, relative to the workspace folder or absolute. Auto-detected when empty |
 | `laravelRoutes.exceptVendor` | `false` | Hide routes defined by vendor packages (`--except-vendor`) |
+| `laravelRoutes.watchRoutes` | `true` | Reload automatically when a PHP file under `routes/` changes. A failed reload keeps the previous list and shows no notification |
 
 Settings can be set per workspace in `.vscode/settings.json`. The list reloads automatically when they change.
 
@@ -98,6 +99,7 @@ Paths returned by `route:list` inside the container are relative to the project 
 - On Laravel 11 the definition line of closure routes is not part of `route:list`, so it is located by searching files. Routes whose URI is assembled with `Route::prefix()` and similar may not be found
 - With several Laravel projects, only the first one found is used. Set `laravelRoutes.projectRoot` to choose
 - `route:list` boots the Laravel application, so it can fail on a broken `.env` and similar problems
+- Automatic reload only watches `routes/`. Routes registered elsewhere, for example by service providers or packages, need the Refresh button
 
 ## Development
 

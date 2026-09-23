@@ -7,12 +7,16 @@ import { LaravelRoute, parseRouteList } from './routeParser';
 import { RouteItem, RouteTreeProvider, shortMiddleware } from './routeProvider';
 
 const VIEW_ID = 'laravelRoutes.routes';
+/** ファイル保存の連打をまとめるための待ち時間 */
+const WATCH_DEBOUNCE_MS = 1500;
 
 export function activate(context: vscode.ExtensionContext): void {
   const output = vscode.window.createOutputChannel('Laravel Routes');
   const provider = new RouteTreeProvider();
   const treeView = vscode.window.createTreeView(VIEW_ID, { treeDataProvider: provider });
   let projectRoot: string | undefined;
+  let watcher: vscode.FileSystemWatcher | undefined;
+  let watchTimer: NodeJS.Timeout | undefined;
 
   context.subscriptions.push(
     output,
@@ -38,12 +42,21 @@ export function activate(context: vscode.ExtensionContext): void {
         void load();
       }
     }),
+    { dispose: () => stopWatching() },
   );
 
   let loading = false;
+  let reloadRequested = false;
 
-  async function load(): Promise<void> {
+  /**
+   * ルート一覧を読み込む。
+   * silent: ファイル監視からの自動再読み込み用。失敗しても前回の一覧を残し、通知を出さない
+   *（編集途中の構文エラーで route:list が失敗するのは普通のことなので）
+   */
+  async function load(options: { silent?: boolean } = {}): Promise<void> {
     if (loading) {
+      // 実行中に来た要求は取りこぼさず、終わってからもう一度読む
+      reloadRequested = true;
       return;
     }
     loading = true;
@@ -52,6 +65,7 @@ export function activate(context: vscode.ExtensionContext): void {
       await setContext('hasProject', projectRoot !== undefined);
       await setContext('loadError', false);
       treeView.description = projectRoot ? describeProjectRoot(projectRoot) : undefined;
+      startWatching(projectRoot);
 
       if (!projectRoot) {
         provider.setRoutes([]);
@@ -73,6 +87,10 @@ export function activate(context: vscode.ExtensionContext): void {
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       output.appendLine(`ERROR: ${message}`);
+      if (options.silent) {
+        treeView.message = '自動再読み込みに失敗しました。出力パネルを確認してください（前回の一覧を表示中）';
+        return;
+      }
       provider.setRoutes([]);
       treeView.badge = undefined;
       await setContext('loadError', true);
@@ -83,7 +101,49 @@ export function activate(context: vscode.ExtensionContext): void {
       });
     } finally {
       loading = false;
+      if (reloadRequested) {
+        reloadRequested = false;
+        void load(options);
+      }
     }
+  }
+
+  /** routes/ 配下の PHP ファイルを監視し、変更があれば少し待ってから自動で再読み込みする */
+  function startWatching(root: string | undefined): void {
+    stopWatching();
+    if (!root) {
+      return;
+    }
+    const enabled = vscode.workspace
+      .getConfiguration('laravelRoutes', vscode.Uri.file(root))
+      .get<boolean>('watchRoutes', true);
+    if (!enabled) {
+      return;
+    }
+
+    watcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(root, 'routes/**/*.php'));
+    const schedule = (uri: vscode.Uri) => {
+      output.appendLine(`changed: ${path.relative(root, uri.fsPath)}`);
+      if (watchTimer) {
+        clearTimeout(watchTimer);
+      }
+      watchTimer = setTimeout(() => {
+        watchTimer = undefined;
+        void load({ silent: true });
+      }, WATCH_DEBOUNCE_MS);
+    };
+    watcher.onDidChange(schedule);
+    watcher.onDidCreate(schedule);
+    watcher.onDidDelete(schedule);
+  }
+
+  function stopWatching(): void {
+    if (watchTimer) {
+      clearTimeout(watchTimer);
+      watchTimer = undefined;
+    }
+    watcher?.dispose();
+    watcher = undefined;
   }
 
   /** クリック（LaravelRoute）と右クリックメニュー（RouteItem）の両方から呼ばれる */

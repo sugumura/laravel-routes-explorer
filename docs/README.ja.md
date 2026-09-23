@@ -19,7 +19,7 @@ Laravel プロジェクトのルート一覧を VSCode のサイドバーに表�
   - クロージャルートは Laravel 12 以降なら `route:list` が返す定義位置へ正確に移動。Laravel 11 では `routes/` 配下をルート名・URI で検索（ベストエフォート）
 - 右クリックメニューから「Go to Source」（クリックと同じ）と「Go to Route Definition」（`routes/` 配下の定義行）を選べる
 - パス（URI の部分一致、大文字小文字を区別しない）とミドルウェア（複数選択で AND 条件）で絞り込み。両方を組み合わせられる
-- ルート一覧の再読み込み
+- ルート一覧の再読み込み。`routes/` 配下のファイルを監視して変更時に自動で再読み込み
 - ツリーにフォーカスして `Cmd+F`（Windows/Linux は `Ctrl+Alt+F`）で URI やルート名のテキスト検索
 
 ## 必要環境
@@ -59,6 +59,7 @@ code --install-extension laravel-routes-explorer-0.1.0.vsix
 | `laravelRoutes.command` | `php artisan route:list --json` | ルート一覧を取得するコマンド。プロジェクトルートを cwd としてシェル経由で実行する |
 | `laravelRoutes.projectRoot` | `""` | `artisan` があるフォルダ。ワークスペースフォルダからの相対パスまたは絶対パス。空なら自動検出 |
 | `laravelRoutes.exceptVendor` | `false` | vendor パッケージが定義したルートを除外する（`--except-vendor`） |
+| `laravelRoutes.watchRoutes` | `true` | `routes/` 配下の PHP ファイルの変更時に自動で再読み込みする。失敗時は前回の一覧を残し、通知は出さない |
 
 設定はワークスペース単位（`.vscode/settings.json`）で指定できます。変更すると自動で再読み込みします。
 
@@ -97,6 +98,7 @@ Laravel Sail:
 - Laravel 11 ではクロージャルートの定義位置が `route:list` に含まれないため、ファイル検索による推測です。`Route::prefix()` などで URI が組み立てられていると見つからないことがあります
 - 複数の Laravel プロジェクトがある場合、最初に見つかったものだけを対象にします。`laravelRoutes.projectRoot` で明示してください
 - `route:list` は Laravel アプリを起動するため、`.env` の不備などで失敗することがあります
+- 自動再読み込みが監視するのは `routes/` だけです。サービスプロバイダーやパッケージが登録するルートは再読み込みボタンで反映してください
 
 ## 開発
 

@@ -165,6 +165,12 @@
           "default": false,
           "description": "vendor パッケージが定義したルートを除外します（route:list --except-vendor）。",
           "scope": "resource"
+        },
+        "laravelRoutes.watchRoutes": {
+          "type": "boolean",
+          "default": true,
+          "scope": "resource",
+          "markdownDescription": "`routes/` 配下の PHP ファイルが変更されたら自動で再読み込みします。失敗しても前回の一覧を残し、通知は出しません。"
         }
       }
     }
