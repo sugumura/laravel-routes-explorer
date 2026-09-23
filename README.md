@@ -91,6 +91,8 @@ Laravel Sail:
 
 ## 開発
 
+Node.js 24 以上と pnpm が必要です。
+
 ```sh
 pnpm install
 pnpm run compile   # または pnpm run watch

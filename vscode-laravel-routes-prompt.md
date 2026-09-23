@@ -9,7 +9,7 @@ Laravel プロジェクトのルート一覧をサイドバーに表示する VS
 
 - 開発言語: TypeScript
 - VSCode Extension API を使用
-- Node.js 20 以上、pnpm を使用
+- Node.js 24 以上、pnpm を使用
 - 私は TypeScript と VSCode Extension API の経験がありません。ファイル構成・ビルド手順・デバッグ方法もすべて説明してください
 - 対象の Laravel プロジェクトは PHP 8.2 以上、Laravel 11 以上を想定
 

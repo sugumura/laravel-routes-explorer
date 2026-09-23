@@ -10,7 +10,8 @@
     "url": "https://github.com/sugumura/laravel-routes-explorer.git"
   },
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.85.0",
+    "node": ">=24"
   },
   "categories": [
     "Other"
@@ -141,7 +142,7 @@
     "package": "vsce package --no-dependencies"
   },
   "devDependencies": {
-    "@types/node": "^20.14.0",
+    "@types/node": "^24.0.0",
     "@types/vscode": "^1.85.0",
     "@vscode/vsce": "^3.2.0",
     "typescript": "^5.5.0"
