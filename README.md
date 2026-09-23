@@ -106,6 +106,8 @@ VSCode でこのフォルダを開き `F5` を押すと、拡張開発ホスト�
 ./scripts/create-sample-app.sh
 ```
 
+PHP 8.3 以上と composer が必要です。別の PHP や composer を使う場合は `--php` と `--composer` でパスを指定します。メッセージは `LANG` に応じて日本語と英語が切り替わり、`--lang ja|en` で固定できます。`--help` でオプション一覧が出ます。
+
 コントローラ@メソッド、Invokable、クロージャ、`Route::view` / `Route::redirect`、リソースルート、API ルート、prefix 付きグループ、複数ミドルウェアなど、拡張が扱うパターンを一通り含んだルートが `routes/web.php` と `routes/api.php` に定義されます。
 
 - `src/extension.ts` — エントリーポイント。コマンド登録と読み込み処理
