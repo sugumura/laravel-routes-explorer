@@ -33,7 +33,7 @@ Laravel プロジェクトのルート一覧を VSCode のサイドバーに表�
 マーケットプレイスには公開していません。`.vsix` ファイルからインストールします。
 
 ```sh
-code --install-extension laravel-routes-explorer-0.0.2.vsix
+code --install-extension laravel-routes-explorer-0.1.0.vsix
 ```
 
 または VSCode の拡張機能ビューで「…」メニューから「VSIX からのインストール」を選びます。
@@ -141,8 +141,8 @@ pnpm run package
 2. バージョンと同じ名前のタグを付けて push する
 
 ```sh
-git tag v0.0.2
-git push origin main v0.0.2
+git tag v0.1.0
+git push origin main v0.1.0
 ```
 
 タグと `package.json` の `version` が一致しないとワークフローは失敗します。`v0.1.0-beta.1` のようにハイフンを含むタグはプレリリースとして公開されます。リリースノートはコミット履歴から自動生成されます。
