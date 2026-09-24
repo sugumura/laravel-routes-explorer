@@ -10,7 +10,7 @@ export interface LaravelRoute {
   action: string;
   /** ミドルウェア名の配列。通常は "web", "auth", "throttle:60,1" のようなエイリアス名 */
   middleware: string[];
-  /** クロージャルートの定義位置（Laravel 12 以降）。プロジェクトルートからの相対パス */
+  /** クロージャルートの定義位置（Laravel 12.55 以降）。プロジェクトルートからの相対パス */
   path: { file: string; line: number } | null;
   /** vendor パッケージが定義したルートか（Laravel 9 以降） */
   vendor: boolean;

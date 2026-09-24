@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-// クロージャルート（Laravel 12 以降は path で定義行に飛べる）
+// クロージャルート（Laravel 12.55 以降は path で定義行に飛べる）
 Route::get('/', function () {
     return view('welcome');
 })->name('home');

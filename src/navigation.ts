@@ -103,7 +103,7 @@ function loadPsr4Map(projectRoot: string): Psr4Entry[] {
 
 /**
  * ルートを定義している行（routes/*.php など）を開く。
- * - route:list の path（Laravel 12 以降のクロージャルート）があればその位置へ
+ * - route:list の path（Laravel 12.55 以降のクロージャルート）があればその位置へ
  * - なければ routes/ 配下からルート名または URI を検索する（ベストエフォート）
  */
 export async function openRouteDefinition(route: LaravelRoute, projectRoot: string): Promise<void> {

@@ -16,7 +16,7 @@ It runs `php artisan route:list --json`, shows the result as a tree, and jumps t
 - Route name and controller@method on each row, middleware and other details in the tooltip
 - Click a route to open the controller file at the target method
   - Invokable controllers open at `__invoke`
-  - Closure routes open at the definition line reported by `route:list` on Laravel 12+, or found by searching `routes/` on Laravel 11 (best effort)
+  - Closure routes open at the definition line reported by `route:list` on Laravel 12.55+, or found by searching `routes/` on older versions (best effort)
 - Right-click menu with "Go to Source" (same as click) and "Go to Route Definition" (the `Route::...` line under `routes/`)
 - Filter by path (case-insensitive substring of the URI) and by middleware (multiple selections are combined with AND). Both filters combine
 - Reload the route list. Files under `routes/` are watched and the list reloads automatically when they change
@@ -96,7 +96,7 @@ Paths returned by `route:list` inside the container are relative to the project 
 
 ## Limitations
 
-- On Laravel 11 the definition line of closure routes is not part of `route:list`, so it is located by searching files. Routes whose URI is assembled with `Route::prefix()` and similar may not be found
+- Before Laravel 12.55 the definition line of closure routes is not part of `route:list`, so it is located by searching files. Routes whose URI is assembled with `Route::prefix()` and similar may not be found
 - With several Laravel projects, only the first one found is used. Set `laravelRoutes.projectRoot` to choose
 - `route:list` boots the Laravel application, so it can fail on a broken `.env` and similar problems
 - Automatic reload only watches `routes/`. Routes registered elsewhere, for example by service providers or packages, need the Refresh button
